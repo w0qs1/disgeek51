@@ -24,6 +24,25 @@ def convert2byte(data):
 
     return data
 
+def hexbyte(data):
+    data = hex(data)
+    data = "0X0" + data[2]
+
+    return data
+
+def hexbytes(data):
+    data = hex(data)
+    if len(data) == 3:
+        data = "0X000" + data[2:]
+
+    elif len(data) == 4:
+        data = "0X00" + data[2:]
+    
+    elif len(data) == 5:
+        data = "0X0" + data[2:]
+
+    return data
+
 def disassemble(data, obc, address, asm): # data = [first byte in string, second byte in string, ...]
     i = 0
     while (i < len(data)):
@@ -34,7 +53,7 @@ def disassemble(data, obc, address, asm): # data = [first byte in string, second
 
             if data[i] == int(obc[x][0], 16):
                 if obc[x][1] == "1":
-                    ltbw = "0X" + (hex(address))[2:].upper() + "\t| " + hex(data[i]).upper() + "\t\t|  " + obc[x][2] + ("" if obc[x][3] == "-" else " " + obc[x][3]) + " "
+                    ltbw = "0X" + (hexbytes(address))[2:].upper() + "\t| " + hexbyte(data[i]).upper() + "\t\t |  " + obc[x][2] + ("" if obc[x][3] == "-" else " " + obc[x][3]) + " "
 
                     for operand in operands:
                         if operands[0] != "-":
@@ -53,14 +72,14 @@ def disassemble(data, obc, address, asm): # data = [first byte in string, second
                     i += 1
 
                 elif obc[x][1] == "2":
-                    ltbw = "0X" + (hex(address))[2:].upper() + "\t| " + hex(data[i]).upper() + " " + hex(data[i + 1]).upper() + "\t|  " + obc[x][2] + " "
+                    ltbw = "0X" + (hexbytes(address))[2:].upper() + "\t| " + hexbyte(data[i]).upper() + " " + hexbyte(data[i + 1]).upper() + "\t |  " + obc[x][2] + " "
                     y = 1
                     for k, operand in enumerate(operands):
                         if operand == "bit addr" or operand == "data addr":
-                            ltbw += str(hex(data[i + k + y])).upper()
+                            ltbw += str(hexbyte(data[i + k + y])).upper()
                         
                         elif operand == "#data":
-                            ltbw += "#" + str(hex(data[i + k + y])).upper()
+                            ltbw += "#" + str(hexbyte(data[i + k + y])).upper()
 
                         elif operand == "code addr":
                             if obc[x][2] == "ACALL" or obc[x][2] == "AJMP":
@@ -74,8 +93,8 @@ def disassemble(data, obc, address, asm): # data = [first byte in string, second
                                 if address > 127:
                                     codeaddr = 256 - codeaddr
 
-                            codeaddr = hex(codeaddr)[2:]
-                            ltbw += "(0X" + codeaddr.upper() + ")"
+                            codeaddr = hexbytes(codeaddr)
+                            ltbw += "(" + codeaddr.upper() + ")"
 
                         else:
                             ltbw += operand
@@ -97,14 +116,14 @@ def disassemble(data, obc, address, asm): # data = [first byte in string, second
                     i += 2
 
                 elif obc[x][1] == "3":
-                    ltbw = "0X" + (hex(address))[2:].upper() + "\t| " + hex(data[i]).upper() + " " + hex(data[i + 1]).upper() + " " + hex(data[i + 2]).upper() + "|  " + obc[x][2] + " "
+                    ltbw = "0X" + (hexbytes(address))[2:].upper() + "\t| " + hexbyte(data[i]).upper() + " " + hexbyte(data[i + 1]).upper() + " " + hexbyte(data[i + 2]).upper() + " |  " + obc[x][2] + " "
                     y = 1
                     for k, operand in enumerate(operands):
                         if operand == "bit addr" or operand == "data addr":
-                            ltbw += str(hex(data[i + k + y])).upper()
+                            ltbw += str(hexbyte(data[i + k + y])).upper()
                         
                         elif operand == "#data":
-                            ltbw += "#" + str(hex(data[i + k + y])).upper()
+                            ltbw += "#" + str(hexbyte(data[i + k + y])).upper()
 
                         elif operand == "code addr":
                             if obc[x][2] == "ACALL" or obc[x][2] == "AJMP":
@@ -121,8 +140,8 @@ def disassemble(data, obc, address, asm): # data = [first byte in string, second
                                 if address > 127:
                                     codeaddr = 256 - codeaddr
 
-                            codeaddr = hex(codeaddr)[2:]
-                            ltbw += "(0X" + codeaddr.upper() + ")"
+                            codeaddr = hexbytes(codeaddr)
+                            ltbw += "(" + codeaddr.upper() + ")"
 
                         else:
                             ltbw += operand
@@ -155,6 +174,8 @@ def main():
     f.close()
 
     asm = open(sys.argv[-1], "w")
+    print("\t|\t\t |  " + "ORG (0X" + lines[0][3:7] + ")")
+    asm.write("ORG 0X" + lines[0][3:7])
     opc = open("opcodehex.txt", "r")
     obc = []
     for line in opc.readlines():
@@ -164,8 +185,7 @@ def main():
     opc.close()
 
     for index, line in enumerate(lines):
-        print("\n")
-        print(line, end="")
+
         bytecount = int(line[1:3], 16) # convert from hex to decimal
         address = int(line[3:7], 16)
 
@@ -190,6 +210,8 @@ def main():
 
         disassemble(data, obc, address, asm)
 
+    print("\t|\t\t |  " + "END")
+    asm.write("\t|\t\t |  " + "END")
     asm.close()
 
 if __name__ == "__main__":
