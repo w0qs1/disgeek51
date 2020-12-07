@@ -26,7 +26,8 @@ def convert2byte(data):
 
 def hexbyte(data):
     data = hex(data)
-    data = "0X0" + data[2]
+    if len(data) == 3:
+        data = "0X0" + data[2]
 
     return data
 
