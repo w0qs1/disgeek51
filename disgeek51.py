@@ -110,6 +110,9 @@ def disassemble(data, obc, address, asm): # data = [first byte in string, second
                             if obc[x][2] == "ACALL" or obc[x][2] == "AJMP":
                                 codeaddr = int(convert2byte(data[i])[:3] + convert2byte(data[i + k + y]), 2)
 
+                            elif obc[x][2] == "LCALL" or obc[x][2] == "LJMP":
+                                codeaddr = int(convert2byte(data[i + 1]) + convert2byte(data[i + k + y + 1]), 2)
+
                             else: 
                                 codeaddr = address + 3 + data[i + k + y]
                                 if codeaddr > 255:
