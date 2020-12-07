@@ -34,13 +34,13 @@ def hexbyte(data):
 def hexbytes(data):
     data = hex(data)
     if len(data) == 3:
-        data = "0X000" + data[2:]
+        data = "0X000" + data[2]
 
     elif len(data) == 4:
-        data = "0X00" + data[2:]
+        data = "0X00" + data[2:4]
     
     elif len(data) == 5:
-        data = "0X0" + data[2:]
+        data = "0X0" + data[2:5]
 
     return data
 
@@ -186,6 +186,8 @@ def main():
     opc.close()
 
     for index, line in enumerate(lines):
+        if line[7:9] == "01":
+            break
 
         bytecount = int(line[1:3], 16) # convert from hex to decimal
         address = int(line[3:7], 16)
