@@ -54,7 +54,7 @@ def disassemble(data, obc, address, asm): # data = [first byte in string, second
 
             if data[i] == int(obc[x][0], 16):
                 if obc[x][1] == "1":
-                    ltbw = "0X" + (hexbytes(address))[2:].upper() + "\t| " + hexbyte(data[i]).upper() + "\t\t |  " + obc[x][2] + ("" if obc[x][3] == "-" else " " + obc[x][3]) + " "
+                    ltbw = "0X" + (hexbytes(address))[2:].upper() + "\t| " + hexbyte(data[i]).upper() + "\t\t |  " + obc[x][2] + " " #+ ("" if obc[x][3] == "-" else " " + obc[x][3]) + " "
 
                     for operand in operands:
                         if operands[0] != "-":
@@ -169,53 +169,49 @@ def disassemble(data, obc, address, asm): # data = [first byte in string, second
 
     return
 
-def main():
-    f = open(sys.argv[-2], "r")
-    lines = f.readlines()
-    f.close()
+f = open(sys.argv[-2], "r")
+lines = f.readlines()
+f.close()
 
-    asm = open(sys.argv[-1], "w")
-    print("\t|\t\t |  " + "ORG (0X" + lines[0][3:7] + ")")
-    asm.write("ORG 0X" + lines[0][3:7])
-    opc = open("opcodehex.txt", "r")
-    obc = []
-    for line in opc.readlines():
-        line = line.replace("\n", "")
-        obc.append(line.split("  "))
+asm = open(sys.argv[-1], "w")
+print("\t|\t\t |  " + "ORG (0X" + lines[0][3:7] + ")")
+asm.write("ORG 0X" + lines[0][3:7])
+opc = open("opcodehex.txt", "r")
+obc = []
+for line in opc.readlines():
+    line = line.replace("\n", "")
+    obc.append(line.split("  "))
 
-    opc.close()
+opc.close()
 
-    for index, line in enumerate(lines):
-        if line[7:9] == "01":
-            break
+for index, line in enumerate(lines):
+    if line[7:9] == "01":
+        break
 
-        bytecount = int(line[1:3], 16) # convert from hex to decimal
-        address = int(line[3:7], 16)
+    bytecount = int(line[1:3], 16) # convert from hex to decimal
+    address = int(line[3:7], 16)
 
-        # byte count verification:
-        lng = len(line) - 12
-        bytecount *= 2
-        if lng != bytecount:
-            print(f"Byte count mismatch in line: {index + 1}")
-            break
+    # byte count verification:
+    lng = len(line) - 12
+    bytecount *= 2
+    if lng != bytecount:
+        print(f"Byte count mismatch in line: {index + 1}")
+        break
 
-        data = [] # data to be stored as base 10 integer
-        i = 9
-        while i < len(line) - 3:
-            data.append(int(line[i:i+2], 16))
-            i += 2
+    data = [] # data to be stored as base 10 integer
+    i = 9
+    while i < len(line) - 3:
+        data.append(int(line[i:i+2], 16))
+        i += 2
 
-        checksum = int(line[-3:], 16)
+    checksum = int(line[-3:], 16)
 
-        if not sumcheck(line[1:-3], checksum):
-            print(f"Checksum error in line: {index + 1}")
-            break
+    if not sumcheck(line[1:-3], checksum):
+        print(f"Checksum error in line: {index + 1}")
+        break
 
-        disassemble(data, obc, address, asm)
+    disassemble(data, obc, address, asm)
 
-    print("\t|\t\t |  " + "END")
-    asm.write("\t|\t\t |  " + "END")
-    asm.close()
-
-if __name__ == "__main__":
-    main()
+print("\t|\t\t |  " + "END")
+asm.write("\t|\t\t |  " + "END")
+asm.close()
