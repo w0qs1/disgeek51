@@ -44,6 +44,21 @@ def hexbytes(data):
 
     return data
 
+    
+# disassemble : will disassemble the current line after checking of checksum and bytelength
+#
+# @param data : list of current line data in group of byte
+#		suppose data is ABCDABCD
+#		data = [ AB, CD, AB, CD ... ]
+#
+# @param obc = [ [opcode, clk_cycles, numenoic, ..extra operands], 
+# 	  [00, 1, NOP ],
+# 	  [01, 2, AJMP, <code> , <addr>],
+# 	  [ .. ] ]
+# refrence of opcodehex.txt
+#
+# @param address : starting address of loading of data
+# @param asm : file where we will write the disassebled file.
 def disassemble(data, obc, address, asm): # data = [first byte in string, second byte in string, ...]
     i = 0
     while (i < len(data)):
@@ -170,17 +185,17 @@ def disassemble(data, obc, address, asm): # data = [first byte in string, second
     return
 
 f = open(sys.argv[-2], "r")
-lines = f.readlines()
+lines = f.readlines() #returns list containing each line in the file as a list item
 f.close()
 
 asm = open(sys.argv[-1], "w")
-print("\t|\t\t |  " + "ORG (0X" + lines[0][3:7] + ")")
-asm.write("ORG 0X" + lines[0][3:7])
-opc = open("opcodehex.txt", "r")
+print("\t|\t\t |  " + "ORG (0X" + lines[0][3:7] + ")") #first line char[3:6] starting address
+asm.write("ORG 0X" + lines[0][3:7])	#write in the file
+opc = open("opcodehex.txt", "r")	#open the opcode file
 obc = []
 for line in opc.readlines():
     line = line.replace("\n", "")
-    obc.append(line.split("  "))
+    obc.append(line.split("  ")) #will split the line into list of character at given character
 
 opc.close()
 
@@ -188,7 +203,7 @@ for index, line in enumerate(lines):
     if line[7:9] == "01":
         break
 
-    bytecount = int(line[1:3], 16) # convert from hex to decimal
+    bytecount = int(line[1:3], 16) # convert from hex to decimal and storing bytecount data of current file in decimal
     address = int(line[3:7], 16)
 
     # byte count verification:
@@ -198,7 +213,7 @@ for index, line in enumerate(lines):
         print(f"Byte count mismatch in line: {index + 1}")
         break
 
-    data = [] # data to be stored as base 10 integer
+    data = [] # data to be stored as base 10 integer and as list of bytes
     i = 9
     while i < len(line) - 3:
         data.append(int(line[i:i+2], 16))
